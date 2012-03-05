@@ -6,7 +6,9 @@ App.views.SlideFilters = Backbone.View.extend({
 
   events: {
     'slidestop .ui-slider': 'stop_slider',
-    'click .content a.btn': 'select_filter'
+    'click .content a.btn': 'select_filter',
+    'focus .range.size input': 'focus_area_slider_display',
+    'blur .range.size input': 'blur_area_slider_display'
   },
 
   initialize: function() {
@@ -38,8 +40,29 @@ App.views.SlideFilters = Backbone.View.extend({
     var maxArea = this.species_ials_min_max.getCurrentMax();
     $('#area_slider').slider('option', 'min', minArea);
     $('#area_slider').slider('option', 'max', maxArea);
-    $(".range-form .size .min-value").val(minArea);
-    $(".range-form .size .max-value").val(maxArea);
+    $('#area_slider').slider('values', 0, minArea);
+    $('#area_slider').slider('values', 1, maxArea);
+    $(".range-form .size .min-value").val(this.area_size_format(minArea));
+    $(".range-form .size .max-value").val(this.area_size_format(maxArea));
+  },
+  
+  focus_area_slider_display: function(event){
+  	var actualValue = null;
+  	if (event.target.hasClass('min-value')){
+  		actualValue = $('#area_slider').slider('values', 0);
+  	} else {
+  		actualValue = $('#area_slider').slider('values', 1);
+  	}
+  	$(event.target).val(actualValue);
+  },
+  
+  blur_area_slider_display: function(event){
+  	if ($(event.target).hasClass('min-value')){
+  		$('#area_slider').slider('values', 0, $(event.target).val());
+  	} else {
+  		$('#area_slider').slider('values', 1, $(event.target).val());
+  	}
+  	$(event.target).val(this.area_size_format($(event.target).val()));
   },
 
   enable_select: function() {
@@ -62,9 +85,13 @@ App.views.SlideFilters = Backbone.View.extend({
     } else if(jQuery(event.target).parents('.range').hasClass("size")) {
       this.species_ials.filterBySize(ui.values[0], ui.values[1]);
 
-      $(".range-form .size .min-value").val(ui.values[0]);
-      $(".range-form .size .max-value").val(ui.values[1]);
+      $(".range-form .size .min-value").val(this.area_size_format(ui.values[0]));
+      $(".range-form .size .max-value").val(this.area_size_format(ui.values[1]));
     }
+  },
+
+  area_size_format: function(val){
+  	return Math.ceil(val / 1000) + 'K';
   },
 
   select_filter: function(event) {
